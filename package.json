@@ -1,0 +1,23 @@
+{
+  "name": "aws-json",
+  "version": "0.0.1",
+  "description": "Convert to and from AWS horrible JSON to normal, sane JSON.",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/briancsparks/aws-json.git"
+  },
+  "keywords": [
+    "aws",
+    "json"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/briancsparks/aws-json/issues"
+  },
+  "homepage": "https://github.com/briancsparks/aws-json#readme"
+}
