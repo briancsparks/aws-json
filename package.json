@@ -19,5 +19,11 @@
   "bugs": {
     "url": "https://github.com/briancsparks/aws-json/issues"
   },
-  "homepage": "https://github.com/briancsparks/aws-json#readme"
+  "homepage": "https://github.com/briancsparks/aws-json#readme",
+  "devDependencies": {
+    "ava": "^0.16.0"
+  },
+  "dependencies": {
+    "underscore": "^1.8.3"
+  }
 }
