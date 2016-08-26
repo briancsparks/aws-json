@@ -92,7 +92,10 @@ exports.AwsJson = function(awsJson) {
 
   self.jsObject = function() {
     return json;
-    //return JSON.stringify(orig);
+  };
+
+  self.stringify = function() {
+    return JSON.stringify(self.jsObject());
   };
 
   self.parse = function() {
@@ -134,7 +137,7 @@ if (__filename === process.argv[1]) {
       var aws  = JSON.parse(stdout);
       var json = new exports.AwsJson(aws);
 
-      console.log(JSON.stringify(json.jsObject()));
+      console.log(json.stringify());
     });
   }());
 }
