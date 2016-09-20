@@ -3,6 +3,21 @@ var _         = require('underscore');
 
 exports.parse = {};
 
+/**
+ *  Parse AWS Tags.
+ *
+ *    {"Tags":[
+ *      { "Key":"key", "Value": "value" },
+ *      { "Key":"key2", "Value": "value2" }
+ *    ]}
+ *
+ *    becomes:
+ *
+ *    {
+ *      key:"value",
+ *      key2:"value2"
+ *    }
+ */
 var parseTags = exports.parse.tags = function(tags) {
   return _.reduce(tags, function(m, tag) {
     if (!tag.Key || !tag.Value) { return m; }
@@ -14,6 +29,13 @@ var parseTags = exports.parse.tags = function(tags) {
   }, {});
 };
 
+/**
+ *  Create a normal JS object from an AWS array.
+ *
+ *  AWS will many times use an array of objects, were the JS convention would be
+ *  an object. These arrays have an entry that should be used as the key.
+ *
+ */
 var objectFromAwsArray = exports.parse.objectFromAwsArray = function(arr, keyName) {
   var result = _.reduce(arr, function(m, item) {
     if (!item[keyName]) { return m; }
@@ -29,26 +51,37 @@ var objectFromAwsArray = exports.parse.objectFromAwsArray = function(arr, keyNam
   return result;
 }
 
-var fix = {};
-
+/**
+ *  Create a function like objectFromAwsArray, but specific for Reservations.
+ */
 var mkReservations = function() {
   return function(arr) {
     return objectFromAwsArray(arr, 'ReservationId');
   };
 };
 
+/**
+ *  A function creating function like objectFromAwsArray, but for the named key.
+ */
 var mkFixer = function(keyName) {
   return function(arr) {
     return objectFromAwsArray(arr, keyName);
   };
 };
 
+/**
+ *  A bunch of fixers.
+ */
+var fix = {};
 fix.Reservations        = mkReservations();
 fix.Instances           = mkFixer('InstanceId');
 fix.SecurityGroups      = mkFixer('GroupName');
 fix.Groups              = mkFixer('GroupName');
 fix.NetworkInterfaces   = mkFixer('NetworkInterfaceId');
 
+/**
+ *  Parse an object that we know is an AWS object.
+ */
 var parseObject = function(item) {
   var result = {};
 
@@ -65,6 +98,9 @@ var parseObject = function(item) {
   return result;
 };
 
+/**
+ *  Parse an item - it might be an Array, an Object, or a POD.
+ */
 var parseItem = function(item) {
   var result;
 
@@ -85,6 +121,9 @@ var parseItem = function(item) {
   return item;
 };
 
+/**
+ *  Parses JSON that was returned from one of the Describe* AWS APIs.
+ */
 exports.AwsJson = function(awsJson) {
   var self = this;
   var orig = JSON.parse(JSON.stringify(awsJson));       // Deep copy
