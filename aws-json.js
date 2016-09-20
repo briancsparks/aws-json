@@ -73,11 +73,12 @@ var mkFixer = function(keyName) {
  *  A bunch of fixers.
  */
 var fix = {};
-fix.Reservations        = mkReservations();
-fix.Instances           = mkFixer('InstanceId');
-fix.SecurityGroups      = mkFixer('GroupName');
-fix.Groups              = mkFixer('GroupName');
-fix.NetworkInterfaces   = mkFixer('NetworkInterfaceId');
+fix.Reservations              = mkReservations();
+fix.Instances                 = mkFixer('InstanceId');
+fix.SecurityGroups            = mkFixer('GroupName');
+fix.Groups                    = mkFixer('GroupName');
+fix.NetworkInterfaces         = mkFixer('NetworkInterfaceId');
+fix.BlockDeviceMappings       = mkFixer('DeviceName');
 
 /**
  *  Parse an object that we know is an AWS object.
@@ -134,11 +135,16 @@ exports.AwsJson = function(awsJson) {
   };
 
   self.stringify = function() {
-    return JSON.stringify(self.jsObject());
+    return JSON.stringify(self.jsObject(), null, 2);
   };
 
   self.parse = function() {
     json = parseItem(orig);
+  };
+
+  self.add = function(awsJson_) {
+    var newJson = parseItem(awsJson_);
+    _.extend(json, newJson);
   };
 
   return self.parse();

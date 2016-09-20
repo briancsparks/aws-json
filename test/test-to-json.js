@@ -102,3 +102,29 @@ test('objectFromAwsArray handles wrong type', function(t) {
   t.deepEqual(awsJson.parse.objectFromAwsArray(aws.SecurityGroups, 'GroupName'), aws.SecurityGroups);
 });
 
+test ('Handles BlockDeviceMapping', function(t) {
+  var aws = {"BlockDeviceMappings": [
+    {
+      "DeviceName": "/dev/sda1",
+      "Ebs": {
+        "Status": "attached",
+        "DeleteOnTermination": true,
+        "VolumeId": "vol-12345678",
+        "AttachTime": "2015-06-08T16:55:48.000Z"
+      }
+    }
+  ]};
+
+  t.deepEqual(awsJson.parse.objectFromAwsArray(aws.BlockDeviceMappings, 'DeviceName'), {
+    "/dev/sda1": {
+      "DeviceName": "/dev/sda1",
+      "Ebs": {
+        "Status": "attached",
+        "DeleteOnTermination": true,
+        "VolumeId": "vol-12345678",
+        "AttachTime": "2015-06-08T16:55:48.000Z"
+      }
+    }
+  });
+});
+
