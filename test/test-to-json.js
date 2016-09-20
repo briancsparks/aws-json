@@ -1,7 +1,7 @@
 
 import test         from 'ava';
 var    _          = require('underscore');
-var    awsJson    = require('../index');
+var    awsJson    = require('../aws-json');
 
 
 
