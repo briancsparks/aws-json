@@ -23,7 +23,7 @@ var parseTags = exports.parse.tags = function(tags) {
     if (!tag.Key || !tag.Value) { return m; }
 
     m[tag.Key] = tag.Value;
-    m[tag.Key.replace(/[^a-zA-Z_0-9]+/g, '_')] = tag.Value;
+    setOn(m, toCamelCase(tag.Key).replace(/[^a-zA-Z_0-9]+/g, '.'), tag.Value);
 
     return m;
   }, {});
@@ -79,6 +79,15 @@ fix.SecurityGroups            = mkFixer('GroupName');
 fix.Groups                    = mkFixer('GroupName');
 fix.NetworkInterfaces         = mkFixer('NetworkInterfaceId');
 fix.BlockDeviceMappings       = mkFixer('DeviceName');
+fix.Reservations        = mkReservations();
+fix.Instances           = mkFixer('InstanceId');
+fix.SecurityGroups      = mkFixer('GroupName');
+fix.Groups              = mkFixer('GroupName');
+fix.NetworkInterfaces   = mkFixer('NetworkInterfaceId');
+fix.Vpcs                = mkFixer('VpcId');
+fix.Subnets             = mkFixer('SubnetId');
+fix.RouteTables         = mkFixer('RouteTableId');
+fix.Volumes             = mkFixer('VolumeId');
 
 /**
  *  Parse an object that we know is an AWS object.
@@ -125,7 +134,7 @@ var parseItem = function(item) {
 /**
  *  Parses JSON that was returned from one of the Describe* AWS APIs.
  */
-exports.AwsJson = function(awsJson) {
+var AwsJson = exports.AwsJson = function(awsJson) {
   var self = this;
   var orig = JSON.parse(JSON.stringify(awsJson));       // Deep copy
   var json = {};
@@ -148,6 +157,11 @@ exports.AwsJson = function(awsJson) {
   };
 
   return self.parse();
+};
+
+exports.awsToJsObject = function(awsJson) {
+  var awsJsonObject = new AwsJson(awsJson);
+  return awsJsonObject.jsObject();
 };
 
 
@@ -186,4 +200,57 @@ if (__filename === process.argv[1]) {
     });
   }());
 }
+
+/**
+ *  Sets sub-sub-key of object.
+ *
+ *  setOn(x, 'foo.bar.baz', 42)
+ *
+ *  x = {foo:{bar:{baz:42}}}
+ *
+ *  Does not set the sub-object if value is undefined. This allows:
+ *
+ *      // if abc is not set on  options, x.foo.bar.baz does not get set
+ *      setOn(x, 'foo.bar.baz', options.abc);
+ */
+function setOn(x, keys_, value) {
+  if (_.isUndefined(value)) { return; }
+
+  var keys = keys_.split('.'), key;
+  var owner = x;
+
+  while (keys.length > 1) {
+    key = keys.shift();
+    owner[key] = owner[key] || {};
+    owner = owner[key];
+  }
+
+  if ((key = keys.shift())) {
+    owner[key] = value;
+    return owner[key];
+  }
+
+  return;
+};
+
+function capitalizeFirstLetter(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+/**
+ *  Returns the camel-case version of the string.
+ *
+ *  instance_type --> instanceType
+ *  instance-type --> instanceType
+ */
+function toCamelCase(key) {
+  var parts = _.chain(key.split('.')).map(function(x) { return x.split(/[-_]/g); }).flatten().value();
+  var result  = parts.shift();
+
+  _.each(parts, function(s) {
+    result += capitalizeFirstLetter(s);
+  });
+
+  return result;
+};
 
