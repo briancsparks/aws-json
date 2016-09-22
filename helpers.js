@@ -55,6 +55,10 @@ var toCamelCase = helpers.toCamelCase = function(key) {
   return result;
 };
 
+helpers._isnt = function(x) {
+  return _.isNull(x) || _.isUndefined(x);
+};
+
 _.each(helpers, function(value, key) {
   exports[key] = value;
 });
