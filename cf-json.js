@@ -94,6 +94,8 @@ if (process.argv[1] === __filename) {
   vpc.peeringConnection(0,  'vpc-523f3137', 'rtb-364fa452');
   vpc.peeringConnection(97, 'vpc-c1b4a6a5', 'rtb-d0fc77b7');
 
+  vpc.s3Endpoint([vpc.publicRouteTable]);
+
   console.log(cf.toJson(null, 2));
 }
 

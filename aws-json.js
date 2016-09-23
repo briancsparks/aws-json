@@ -83,16 +83,12 @@ fix.Instances                 = mkFixer('InstanceId');
 fix.SecurityGroups            = mkFixer('GroupName');
 fix.Groups                    = mkFixer('GroupName');
 fix.NetworkInterfaces         = mkFixer('NetworkInterfaceId');
+fix.Vpcs                      = mkFixer('VpcId');
+fix.Subnets                   = mkFixer('SubnetId');
+fix.RouteTables               = mkFixer('RouteTableId');
+fix.Volumes                   = mkFixer('VolumeId');
+fix.Images                    = mkFixer('ImageId');
 fix.BlockDeviceMappings       = mkFixer('DeviceName');
-fix.Reservations        = mkReservations();
-fix.Instances           = mkFixer('InstanceId');
-fix.SecurityGroups      = mkFixer('GroupName');
-fix.Groups              = mkFixer('GroupName');
-fix.NetworkInterfaces   = mkFixer('NetworkInterfaceId');
-fix.Vpcs                = mkFixer('VpcId');
-fix.Subnets             = mkFixer('SubnetId');
-fix.RouteTables         = mkFixer('RouteTableId');
-fix.Volumes             = mkFixer('VolumeId');
 
 /**
  *  Parse an object that we know is an AWS object.
