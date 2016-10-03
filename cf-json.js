@@ -80,10 +80,20 @@ if (process.argv[1] === __filename) {
   vpc.enableDnsSupport();
   vpc.enableDnsHostnames();
 
-  var subnetA = vpc.subnet('SubnetA', 'a');
+  var subnetPublicA = vpc.publicSubnet('SubnetPublicA', 'a');
 
-  subnetA.cidrBlock(0, 0, 20);
-  subnetA.mapPublicIpOnLaunch();
+  subnetPublicA.cidrBlock(0, 0, 20);
+  subnetPublicA.mapPublicIpOnLaunch();
+
+  var subnetPrivateA = vpc.privateSubnet('subnetPrivateA', 'a');
+
+  subnetPrivateA.cidrBlock(0, 0, 20);
+  subnetPrivateA.mapPublicIpOnLaunch(false);
+
+  var subnetPrivateA2 = vpc.privateSubnet('subnetPrivateA2', 'a');
+
+  subnetPrivateA2.cidrBlock(0, 0, 20);
+  subnetPrivateA2.mapPublicIpOnLaunch(false);
 
   var sgWide = vpc.securityGroup('sgWide');
 
