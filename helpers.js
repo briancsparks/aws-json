@@ -59,6 +59,52 @@ helpers._isnt = function(x) {
   return _.isNull(x) || _.isUndefined(x);
 };
 
+/**
+ *    Returns the string ip address into a Number.
+ *
+ *    For use with subnet masks.
+ */
+var ipNumber = helpers.ipNumber = function(ip_) {
+    var ip = ip_.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+    if(ip) {
+        return (+ip[1]<<24) + (+ip[2]<<16) + (+ip[3]<<8) + (+ip[4]);
+    }
+    // else ... ?
+    return 0;
+};
+
+var dottedIp = helpers.dottedIp = function(n) {
+  return [n >> 24, (n & 0xffffff) >> 16, (n & 0xffff) >> 8, n & 0xff].join('.');
+};
+
+helpers.nextIp = function(ip) {
+  return dottedIp(ipNumber(ip) + 1);
+};
+
+var ipMask = helpers.ipMask = function(maskSize) {
+  return -1 << (32 - maskSize);
+};
+
+var firstIpInCidrBlock = helpers.firstIpInCidrBlock = function(cidr) {
+  var parts       = cidr.split('/');
+  var minNumber   = ipNumber(parts[0]) & ipMask(parts[1]);
+  return dottedIp(minNumber);
+};
+
+var lastIpInCidrBlock = helpers.lastIpInCidrBlock = function(cidr) {
+  var parts       = cidr.split('/');
+  var maxNumber   = ipNumber(parts[0]) | ~ipMask(parts[1]);
+  return dottedIp(maxNumber);
+};
+
+helpers.nextCidrBlockOfSize = function(cidrBlock_, newNumBits) {
+  var cidrBlock   = cidrBlock_.replace(/\/[0-9]+$/g, '/'+newNumBits);
+  var last        = lastIpInCidrBlock(cidrBlock);
+  var firstOfNext = ipNumber(last) + 1;
+
+  return dottedIp(firstOfNext)+'/'+newNumBits;
+};
+
 _.each(helpers, function(value, key) {
   exports[key] = value;
 });
