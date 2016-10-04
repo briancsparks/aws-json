@@ -71,7 +71,8 @@ var CloudFormationJson = cf.CloudFormationJson = function(options_) {
     var name    = name_   || 'VPC';
     var region  = region_ || 'us-east-1';
 
-    self.data.Resources[name] = vpc.make(name, region, self);
+    var localVpc = self.data.Resources[name] = vpc.make(name, region, self);
+    localVpc.initialize();
     return self.data.Resources[name];
   };
 };
