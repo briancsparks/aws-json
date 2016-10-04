@@ -98,9 +98,10 @@ var lastIpInCidrBlock = helpers.lastIpInCidrBlock = function(cidr) {
 };
 
 helpers.nextCidrBlockOfSize = function(cidrBlock_, newNumBits) {
-  var cidrBlock   = cidrBlock_.replace(/\/[0-9]+$/g, '/'+newNumBits);
-  var last        = lastIpInCidrBlock(cidrBlock);
-  var firstOfNext = ipNumber(last) + 1;
+
+  var lastForOld  = ipNumber(lastIpInCidrBlock(cidrBlock_));
+  var lastForNew  = ipNumber(lastIpInCidrBlock(cidrBlock_.replace(/\/[0-9]+$/g, '/'+newNumBits)));
+  var firstOfNext = Math.max(lastForOld, lastForNew) + 1;
 
   return dottedIp(firstOfNext)+'/'+newNumBits;
 };

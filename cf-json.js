@@ -76,24 +76,23 @@ var CloudFormationJson = cf.CloudFormationJson = function(options_) {
   };
 };
 
-_.each(cf, function(value, key) {
-  exports[key] = value;
-});
+cf.main = function(argv, context, callback) {
 
-if (process.argv[1] === __filename) {
-  var options = {
-    namespace : 'mario',
-    classB    : 22
-  };
+  var i, letter;
 
-  var classB          = options.classB            || 22;
-  var numBitsPublic   = options.num_bits_public   || 24;
-  var numBitsPrivate  = options.num_bits_private  || 20;
-  var numBitsPrivate2 = options.num_bits_private2 || 23;
+  var region          = argv.region             || argv.r                 || 'us-east-1';
+  var cidrBlock       = argv.cidr_block         || argv.cidr              || '10.199.0.0/16';
+  var numBitsPublic   = argv.num_bits_public    || argv.public_size       || 24;
+  var numBitsPrivate  = argv.num_bits_private   || argv.private_size      || 20;
+  var numBitsPrivate2 = argv.num_bits_private2  || argv.private2_size     || 23;
+  var numAzs          = argv.num_azs            || argv.num_az            || 4;
+  var numSubnetsPerAz = argv.num_subnets_per_az || argv.num_subnets       || 3;
 
-  var cidrBlock       = '10.999.0.0/16'.replace('999', classB);
+  if (argv.classb && !(argv.cidr_block || argv.cidr)) {
+    cidrBlock         = '10.999.0.0/16'.replace('999', argv.classb);
+  }
 
-  var cf              = new CloudFormationJson(options);
+  var cf              = new CloudFormationJson(argv);
   var vpc             = cf.vpc();
 
   vpc.cidrBlock(cidrBlock);
@@ -102,24 +101,59 @@ if (process.argv[1] === __filename) {
 
   vpc.s3Endpoint();
 
-  // Public subnet 'A'
-  var subnetPublicA = vpc.publicSubnet('SubnetPublicA', 'a');
-
   cidrBlock = cidrBlock.replace(/\/[0-9]+$/g, '/'+numBitsPublic);
-  subnetPublicA.cidrBlock(cidrBlock);
-  subnetPublicA.mapPublicIpOnLaunch();
 
-  var subnetPrivateA = vpc.privateSubnet('subnetPrivateA', 'a');
+  // Create the public subnets
+  var letters = zoneLettersPerRegion(region);
+  for (i = 0; i < numAzs && letters.length > 0; i += 1) {
 
-  cidrBlock = helpers.nextCidrBlockOfSize(cidrBlock, numBitsPrivate);
-  subnetPrivateA.cidrBlock(cidrBlock);
-  subnetPrivateA.mapPublicIpOnLaunch(false);
+    // Public subnet
+    letter = letters.shift();
 
-  var subnetPrivateA2 = vpc.privateSubnet('subnetPrivateA2', 'a');
+    var subnetPublic = vpc.publicSubnet('SubnetPublic'+letter.toUpperCase(), letter);
 
-  cidrBlock = helpers.nextCidrBlockOfSize(cidrBlock, numBitsPrivate2);
-  subnetPrivateA2.cidrBlock(cidrBlock);
-  subnetPrivateA2.mapPublicIpOnLaunch(false);
+    subnetPublic.cidrBlock(cidrBlock);
+    subnetPublic.mapPublicIpOnLaunch();
+
+    // If we have more public subnets to create, bump the cidr
+    if (i < numAzs && letters.length > 0) {
+      cidrBlock = helpers.nextCidrBlockOfSize(cidrBlock, numBitsPublic);
+    }
+  }
+
+  // Create the first private subnet
+  if (numSubnetsPerAz > 1) {
+    letters = zoneLettersPerRegion(region);
+    for (i = 0; i < numAzs && letters.length > 0; i += 1) {
+
+      // Public subnet
+      letter = letters.shift();
+
+      // Private subnet one
+      var subnetPrivate = vpc.privateSubnet('SubnetPrivate'+letter.toUpperCase(), letter);
+
+      cidrBlock   = helpers.nextCidrBlockOfSize(cidrBlock, numBitsPrivate);
+      subnetPrivate.cidrBlock(cidrBlock);
+      subnetPrivate.mapPublicIpOnLaunch(false);
+    }
+  }
+
+  // Create the second private subnet
+  if (numSubnetsPerAz > 2) {
+    letters = zoneLettersPerRegion(region);
+    for (i = 0; i < numAzs && letters.length > 0; i += 1) {
+
+      // Public subnet
+      letter = letters.shift();
+
+      // Private subnet two
+      var subnetPrivate2 = vpc.privateSubnet('SubnetPrivate'+letter.toUpperCase()+'2', letter);
+
+      cidrBlock   = helpers.nextCidrBlockOfSize(cidrBlock, numBitsPrivate2);
+      subnetPrivate2.cidrBlock(cidrBlock);
+      subnetPrivate2.mapPublicIpOnLaunch(false);
+    }
+  }
 
   var sgWide = vpc.securityGroup('sgWide');
 
@@ -127,9 +161,31 @@ if (process.argv[1] === __filename) {
   sgWide.ingress(-1, -1, -1, '10.0.0.0/8');
   sgWide.ingress('tcp', 22, 22, '0.0.0.0/0');
 
-  vpc.peeringConnection(0,  'vpc-523f3137', 'rtb-364fa452');
-  vpc.peeringConnection(97, 'vpc-c1b4a6a5', 'rtb-d0fc77b7');
+  vpc.peeringConnection(0,  'vpc-00000000', 'rtb-00000000');
+  vpc.peeringConnection(97, 'vpc-97979797', 'rtb-97979797');
 
   console.log(cf.toJson(null, 2));
+};
+
+_.each(cf, function(value, key) {
+  exports[key] = value;
+});
+
+function zoneLettersPerRegion(region) {
+
+  if (region === "ap-south-1")             { return ['a', 'b']; }
+  if (region === "eu-west-1")              { return ['a', 'b', 'c']; }
+  if (region === "ap-southeast-1")         { return ['a', 'b']; }
+  if (region === "ap-southeast-2")         { return ['a', 'b', 'c']; }
+  if (region === "eu-central-1")           { return ['a', 'b']; }
+  if (region === "ap-northeast-2")         { return ['a', 'c']; }
+  if (region === "ap-northeast-1")         { return ['a', 'c']; }
+  if (region === "us-east-1")              { return ['a', 'b', 'd', 'e']; }
+  if (region === "sa-east-1")              { return ['a', 'b', 'c']; }
+  if (region === "us-west-1")              { return ['a', 'b']; }
+  if (region === "us-west-2")              { return ['a', 'b', 'c']; }
+
+  // Unknown region. Most have a and b
+  return ['a', 'b'];
 }
 
