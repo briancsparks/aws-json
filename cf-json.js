@@ -5,11 +5,13 @@
 
 var _             = require('underscore');
 var vpc           = require('./lib/cf/vpc');
+var iam           = require('./lib/cf/iam');
 var subnet        = require('./lib/cf/subnet');
 var helpers       = require('./helpers');
 
 var cf            = {};
 
+var toCapitalCase = helpers.toCapitalCase;
 var capitalizeFirstLetter = helpers.capitalizeFirstLetter;
 
 var CloudFormationJson = cf.CloudFormationJson = function(options_) {
@@ -75,6 +77,26 @@ var CloudFormationJson = cf.CloudFormationJson = function(options_) {
     localVpc.initialize();
     return self.data.Resources[name];
   };
+
+  self.iam = function() {
+    return iam;
+  };
+};
+
+cf.testIam = function(argv, context, callback) {
+
+  var cf              = new CloudFormationJson(argv);
+  var iam             = cf.iam();
+
+  var namespace       = argv.namespace;
+  var service         = argv.service;
+
+  var iRoleName       = [namespace, service, 'instance-role'].join('-');
+  var cfRoleName      = toCapitalCase(iRoleName);
+
+  iam.makeInstanceProfile(cfRoleName, cf, /*policyName=*/iRoleName);
+
+  console.log(cf.toJson(null, 2));
 };
 
 cf.main = function(argv, context, callback) {

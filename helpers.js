@@ -1,6 +1,6 @@
 
-var _             = require('underscore');
-var helpers       = {};
+var _                   = require('underscore');
+var helpers             = {};
 
 /**
  *  Sets sub-sub-key of object.
@@ -53,6 +53,10 @@ var toCamelCase = helpers.toCamelCase = function(key) {
   });
 
   return result;
+};
+
+var toCapitalCase = helpers.toCapitalCase = function(key) {
+  return capitalizeFirstLetter(toCamelCase(key));
 };
 
 helpers._isnt = function(x) {
