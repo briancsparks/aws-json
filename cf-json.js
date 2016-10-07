@@ -124,7 +124,6 @@ libCf.testSns = function(argv, context, callback) {
   var displayName     = argv.displayName;
 
   var topic           = sns.makeTopic(name, cf, displayName);
-
   var policy          = sns.makeTopicPolicy(name+'Policy', cf, topic, {policy: 'document'});
 
   topic.addSubscription('protocol', 'endpopint');
@@ -138,13 +137,9 @@ libCf.testSqs = function(argv, context, callback) {
   var sqs             = cf.sqs();
 
   var name            = argv.name;
-  //var displayName     = argv.displayName;
 
   var queue           = sqs.makeQueue(name, cf);
-
   var policy          = sqs.makeQueuePolicy(name+'Policy', cf, queue, {policy: 'document'});
-
-  //queue.addSubscription('protocol', 'endpopint');
 
   console.log(cf.toJson(null, 2));
 };
