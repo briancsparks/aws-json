@@ -5,16 +5,19 @@
 
 var _             = require('underscore');
 var vpc           = require('./lib/cf/vpc');
-var iam           = require('./lib/cf/iam');
-var subnet        = require('./lib/cf/subnet');
 var helpers       = require('./helpers');
+var libIam        = require('./lib/cf/iam');
+var subnet        = require('./lib/cf/subnet');
+var libSimpleDb   = require('./lib/cf/simple-db');
+var libSns        = require('./lib/cf/topic');
+var libSqs        = require('./lib/cf/queue');
 
-var cf            = {};
+var libCf         = {};
 
 var toCapitalCase = helpers.toCapitalCase;
 var capitalizeFirstLetter = helpers.capitalizeFirstLetter;
 
-var CloudFormationJson = cf.CloudFormationJson = function(options_) {
+var CloudFormationJson = libCf.CloudFormationJson = function(options_) {
   var self    = this;
   var options = options_ || {};
 
@@ -78,12 +81,13 @@ var CloudFormationJson = cf.CloudFormationJson = function(options_) {
     return self.data.Resources[name];
   };
 
-  self.iam = function() {
-    return iam;
-  };
+  self.iam          = function() { return libIam; };
+  self.simpleDb     = function() { return libSimpleDb; };
+  self.sns          = function() { return libSns; };
+  self.sqs          = function() { return libSqs; };
 };
 
-cf.testIam = function(argv, context, callback) {
+libCf.testIam = function(argv, context, callback) {
 
   var cf              = new CloudFormationJson(argv);
   var iam             = cf.iam();
@@ -94,12 +98,58 @@ cf.testIam = function(argv, context, callback) {
   var iRoleName       = [namespace, service, 'instance-role'].join('-');
   var cfRoleName      = toCapitalCase(iRoleName);
 
-  iam.makeInstanceProfile(cfRoleName, cf, /*policyName=*/iRoleName);
+  iam.makeInstanceProfile(namespace, service, cf);
 
   console.log(cf.toJson(null, 2));
 };
 
-cf.main = function(argv, context, callback) {
+libCf.testSimpleDb = function(argv, context, callback) {
+
+  var cf              = new CloudFormationJson(argv);
+  var simpleDb        = cf.simpleDb();
+
+  var name            = argv.name;
+  var description     = argv.description;
+
+  simpleDb.makeSimpleDb(name, cf, description);
+  console.log(cf.toJson(null, 2));
+};
+
+libCf.testSns = function(argv, context, callback) {
+
+  var cf              = new CloudFormationJson(argv);
+  var sns             = cf.sns();
+
+  var name            = argv.name;
+  var displayName     = argv.displayName;
+
+  var topic           = sns.makeTopic(name, cf, displayName);
+
+  var policy          = sns.makeTopicPolicy(name+'Policy', cf, topic, {policy: 'document'});
+
+  topic.addSubscription('protocol', 'endpopint');
+
+  console.log(cf.toJson(null, 2));
+};
+
+libCf.testSqs = function(argv, context, callback) {
+
+  var cf              = new CloudFormationJson(argv);
+  var sqs             = cf.sqs();
+
+  var name            = argv.name;
+  //var displayName     = argv.displayName;
+
+  var queue           = sqs.makeQueue(name, cf);
+
+  var policy          = sqs.makeQueuePolicy(name+'Policy', cf, queue, {policy: 'document'});
+
+  //queue.addSubscription('protocol', 'endpopint');
+
+  console.log(cf.toJson(null, 2));
+};
+
+libCf.main = function(argv, context, callback) {
 
   var i, letter;
 
@@ -190,7 +240,7 @@ cf.main = function(argv, context, callback) {
   console.log(cf.toJson(null, 2));
 };
 
-_.each(cf, function(value, key) {
+_.each(libCf, function(value, key) {
   exports[key] = value;
 });
 
