@@ -6,7 +6,9 @@ var cfJson        = require('./cf-json');
 var setOn         = helpers.setOn;
 var toCamelCase   = helpers.toCamelCase;
 
-exports.parse = {};
+var libAwsJson    = {};
+
+libAwsJson.parse = {};
 
 /**
  *  Parse AWS Tags.
@@ -23,7 +25,7 @@ exports.parse = {};
  *      key2:"value2"
  *    }
  */
-var parseTags = exports.parse.tags = function(tags) {
+var parseTags = libAwsJson.parse.tags = function(tags) {
   return _.reduce(tags, function(m, tag) {
     if (!tag.Key || !tag.Value) { return m; }
 
@@ -41,7 +43,7 @@ var parseTags = exports.parse.tags = function(tags) {
  *  an object. These arrays have an entry that should be used as the key.
  *
  */
-var objectFromAwsArray = exports.parse.objectFromAwsArray = function(arr, keyName) {
+var objectFromAwsArray = libAwsJson.parse.objectFromAwsArray = function(arr, keyName) {
   var result = _.reduce(arr, function(m, item) {
     if (!item[keyName]) { return m; }
 
@@ -135,7 +137,7 @@ var parseItem = function(item) {
 /**
  *  Parses JSON that was returned from one of the Describe* AWS APIs.
  */
-var AwsJson = exports.AwsJson = function(awsJson) {
+var AwsJson = libAwsJson.AwsJson = function(awsJson) {
   var self = this;
   var orig = JSON.parse(JSON.stringify(awsJson));       // Deep copy
   var json = {};
@@ -160,10 +162,20 @@ var AwsJson = exports.AwsJson = function(awsJson) {
   return self.parse();
 };
 
-exports.awsToJsObject = function(awsJson) {
+libAwsJson.awsToJsObject = function(awsJson) {
   var awsJsonObject = new AwsJson(awsJson);
   return awsJsonObject.jsObject();
 };
+
+libAwsJson.mkNamespaceTagFn = function(namespace) {
+  return function(name) {
+    return ['Tags', namespace].concat(helpers.sg_arrayify(arguments)).join('.');
+  };
+};
+
+_.each(libAwsJson, function(value, key) {
+  exports[key] = value;
+});
 
 _.each(cfJson, function(value, key) {
   exports[key] = value;

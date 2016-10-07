@@ -110,6 +110,20 @@ helpers.nextCidrBlockOfSize = function(cidrBlock_, newNumBits) {
   return dottedIp(firstOfNext)+'/'+newNumBits;
 };
 
+// stolen from sg
+helpers.sg_arrayify = function(args_, start_) {
+
+  // args might be an arguments object, so turn it into a real array
+  var start   = arguments.length > 1 ? start_ : 0;
+  var args    = _.rest(args_, start);
+
+  if (args.length === 0)  { return []; }
+
+  if (_.isArray(args[0])) { return args[0]; }
+
+  return args;
+};
+
 _.each(helpers, function(value, key) {
   exports[key] = value;
 });
