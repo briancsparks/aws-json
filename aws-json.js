@@ -173,6 +173,13 @@ libAwsJson.mkNamespaceTagFn = function(namespace) {
   };
 };
 
+libAwsJson.addTag = function(Tags, key, value) {
+  if (!key || !value) { return Tags; }
+
+  Tags.push({Key: key, Value: value});
+  return Tags;
+};
+
 _.each(libAwsJson, function(value, key) {
   exports[key] = value;
 });
