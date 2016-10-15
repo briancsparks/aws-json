@@ -26,7 +26,7 @@ var CloudFormationJson = libCf.CloudFormationJson = function(options_) {
   self.data = {
     AWSTemplateFormatVersion: "2010-09-09",
 
-    Description : capitalizeFirstLetter(options.namespace+"NetApp"),
+    Description : options.description || capitalizeFirstLetter(options.namespace+"NetApp"),
     Mappings    : {},
     Parameters  : {},
     Resources   : {},
