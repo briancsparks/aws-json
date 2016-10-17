@@ -33,6 +33,13 @@ var CloudFormationJson = libCf.CloudFormationJson = function(options_) {
     Outputs     : {}
   };
 
+  self.setOutput = function(name, value, description) {
+    self.data.Outputs[name] = {
+      Value       : value,
+      Description : description
+    };
+  };
+
   self.toJson = function(a, b) {
     var result = {};
 
