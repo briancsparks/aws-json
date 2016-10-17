@@ -242,6 +242,27 @@ libCf.main = function(argv, context, callback) {
   console.log(cf.toJson(null, 2));
 };
 
+/**
+ *  Converts 'normal' JavaScript objects into AWS-style 'Tags' attribs.
+ */
+libCf.toAwsTags = function(tags) {
+  var Tags = [];
+
+  if (tags.Tags) {
+    Tags = JSON.parse(JSON.stringify(tags.Tags));
+  }
+
+  _.each(tags, function(value, key) {
+    if (key === 'Tags') { return; }
+
+    if (_.isString(key) && key && _.isString(value) && value) {
+      Tags.push({Key: key, Value: value});
+    }
+  });
+
+  return Tags;
+};
+
 _.each(libCf, function(value, key) {
   exports[key] = value;
 });
