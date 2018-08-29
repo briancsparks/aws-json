@@ -11,6 +11,8 @@ var subnet        = require('./lib/cf/subnet');
 var libSimpleDb   = require('./lib/cf/simple-db');
 var libSns        = require('./lib/cf/topic');
 var libSqs        = require('./lib/cf/queue');
+var libYamlCf     = require('./lib/yaml/cf');
+var libYamlSam    = require('./lib/yaml/sam');
 
 var libCf         = {};
 
@@ -261,6 +263,46 @@ libCf.toAwsTags = function(tags) {
   });
 
   return Tags;
+};
+
+libCf.loadYaml = function(yamlStr) {
+  const cfYaml = require('./lib/yaml/cf');
+  return cfYaml.load(yamlStr);
+};
+
+libCf.readYamlFile = function(argv, contents, callback) {
+  var   fs          = require('fs');
+
+  const filename    = argv.filename || argv.file || argv.name;
+
+  if (!fs.existsSync(filename))     { return callback(new Error('ENOENT')); }
+
+  return fs.readFile(filename, 'utf8', function (err, data) {
+    if (err)      { return callback(err); }
+    if (!data)    { return callback(new Error(`ENODATA`)); }
+
+    return callback(null, libCf.loadYaml(data));
+  });
+};
+
+libCf.dumpYaml = function(jsonStr) {
+  const cfYaml = require('./lib/yaml/cf');
+  return cfYaml.dump(jsonStr);
+};
+
+libCf.dumpYamlFile = function(argv, contents, callback) {
+  var   fs          = require('fs');
+
+  const filename    = argv.filename || argv.file || argv.name;
+
+  if (!fs.existsSync(filename))     { return callback(new Error('ENOENT')); }
+
+  return fs.readFile(filename, 'utf8', function (err, data) {
+    if (err)      { return callback(err); }
+    if (!data)    { return callback(new Error(`ENODATA`)); }
+
+    return callback(null, libCf.dumpYaml(data));
+  });
 };
 
 _.each(libCf, function(value, key) {
