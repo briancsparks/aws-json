@@ -2,6 +2,7 @@
 var _             = require('underscore');
 var helpers       = require('./helpers');
 var cfJson        = require('./cf-json');
+var v2            = require('./lib/v2');
 
 var setOn         = helpers.setOn;
 var toCamelCase   = helpers.toCamelCase;
@@ -185,6 +186,10 @@ _.each(libAwsJson, function(value, key) {
 });
 
 _.each(cfJson, function(value, key) {
+  exports[key] = value;
+});
+
+_.each(v2, function(value, key) {
   exports[key] = value;
 });
 
