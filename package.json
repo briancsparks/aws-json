@@ -1,6 +1,6 @@
 {
   "name": "aws-json",
-  "version": "0.0.1",
+  "version": "1.1.1",
   "description": "Convert to and from AWS horrible JSON to normal, sane JSON.",
   "main": "index.js",
   "scripts": {
